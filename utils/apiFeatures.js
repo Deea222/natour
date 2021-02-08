@@ -1,5 +1,4 @@
 class APIFeatures {
-  // query는 data를 의미, queryString은 req.query를 의미
   constructor(query, queryString) {
     this.query = query;
     this.queryString = queryString;
@@ -7,11 +6,12 @@ class APIFeatures {
 
   filter() {
     const queryObj = { ...this.queryString };
-    const excludedFields = ['sort', 'fields', 'page', 'limit'];
-    excludedFields.forEach((el) => delete queryObj[el]);
+    const excludedFields = ['page', 'sort', 'limit', 'fields'];
+    excludedFields.forEach(el => delete queryObj[el]);
 
+    // 1B) Advanced filtering
     let queryStr = JSON.stringify(queryObj);
-    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, (match) => `$${match}`);
+    queryStr = queryStr.replace(/\b(gte|gt|lte|lt)\b/g, match => `$${match}`);
 
     this.query = this.query.find(JSON.parse(queryStr));
 
@@ -25,6 +25,7 @@ class APIFeatures {
     } else {
       this.query = this.query.sort('-createdAt');
     }
+
     return this;
   }
 
@@ -35,12 +36,13 @@ class APIFeatures {
     } else {
       this.query = this.query.select('-__v');
     }
+
     return this;
   }
 
   paginate() {
-    const page = +this.queryString.page || 1;
-    const limit = +this.queryString.limit || 100;
+    const page = this.queryString.page * 1 || 1;
+    const limit = this.queryString.limit * 1 || 100;
     const skip = (page - 1) * limit;
 
     this.query = this.query.skip(skip).limit(limit);
@@ -48,5 +50,4 @@ class APIFeatures {
     return this;
   }
 }
-
 module.exports = APIFeatures;
